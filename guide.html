@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>新手指南 · LuckyMC</title>
+  <meta name="description" content="LuckyMC 新手生存宝典：客户端与 Java 21 安装指引、常用基础指令速查、绿宝石每日福利领取与生存建议。">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' rx='3' fill='%23101915'/><polygon points='8,2 14,5 14,11 8,14 2,11 2,5' fill='%2378d64b'/><polygon points='8,4 12,6 12,10 8,12 4,10 4,6' fill='%23b8f36a'/><polygon points='8,5 11,7 8,9 5,7' fill='%23eafdd1'/></svg>">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="nav">
+    <a class="brand" href="index.html">LUCKY<span>MC</span></a>
+    <button class="menu" aria-label="切换菜单">菜单</button>
+    <nav class="navlinks">
+      <a href="index.html">首页</a>
+      <a href="world.html">探索世界</a>
+      <a href="play.html">玩法福利</a>
+      <a class="active" href="guide.html">新手指南</a>
+      <a href="rules.html">玩家公约</a>
+      <a href="join.html">加入我们</a>
+    </nav>
+  </header>
+
+  <section class="page-hero hero-guide">
+    <div class="hero-inner">
+      <div class="kicker">GUIDE / 04 · 新手指南</div>
+      <h1>新手生存宝典，<br>助你快速启程。</h1>
+      <p>从客户端与环境准备，到游戏内常用指令速查与绿宝石津贴领取，这里汇聚了你在 LuckyMC 生存所需的一切基础秘籍。</p>
+    </div>
+  </section>
+
+  <main class="section">
+    <!-- 客户端准备 -->
+    <div class="section-head">
+      <div>
+        <div class="kicker">第一步</div>
+        <h2>客户端与环境准备</h2>
+      </div>
+      <p class="muted">推荐使用纯净、安全的开源主流启动器</p>
+    </div>
+
+    <div class="grid">
+      <article class="card">
+        <div class="card-body">
+          <span class="card-tag">🚀 推荐启动器</span>
+          <h3>HMCL 启动器</h3>
+          <p class="muted">历史悠久、跨平台支持极佳的开源免费启动器。内置游戏版本自动下载与 Fabric / 钠 模组一键安装，新手首选。</p>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-body">
+          <span class="card-tag">✨ 高颜值选择</span>
+          <h3>PCL2 启动器</h3>
+          <p class="muted">界面动画丝滑、功能强大的现代化启动器。支持一键补全 Java 环境与自动整合包导入，在国内玩家中广受好评。</p>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-body">
+          <span class="card-tag">☕ 运行环境</span>
+          <h3>Java 21 运行库</h3>
+          <p class="muted">由于服务器采用 1.21+ / Paper 26.1.2 核心，需要 Java 21 才能正常运行。启动器通常支持自动检测并一键下载匹配的 JRE。</p>
+        </div>
+      </article>
+    </div>
+
+    <!-- 常用指令速查 -->
+    <div class="section-head" style="margin-top: 70px;">
+      <div>
+        <div class="kicker">游戏操作</div>
+        <h2>常用基础指令速查</h2>
+      </div>
+      <p class="muted">进入游戏后，在聊天框中直接输入即可生效</p>
+    </div>
+
+    <div class="cmd-grid">
+      <div class="cmd-card">
+        <div class="cmd-head">
+          <code class="cmd-code">/spawn</code>
+          <span class="cmd-tag">传送</span>
+        </div>
+        <p class="cmd-desc">立即返回服务器的出生点大厅与公共集市中心。</p>
+      </div>
+
+      <div class="cmd-card">
+        <div class="cmd-head">
+          <code class="cmd-code">/sethome [家名]</code>
+          <span class="cmd-tag">家园</span>
+        </div>
+        <p class="cmd-desc">将当前脚下坐标标记为你的私人据点或木屋（支持设置多个）。</p>
+      </div>
+
+      <div class="cmd-card">
+        <div class="cmd-head">
+          <code class="cmd-code">/home [家名]</code>
+          <span class="cmd-tag">家园</span>
+        </div>
+        <p class="cmd-desc">无论身处何方，均可快速瞬间传送回你保存的指定家园。</p>
+      </div>
+
+      <div class="cmd-card">
+        <div class="cmd-head">
+          <code class="cmd-code">/tpa [玩家ID]</code>
+          <span class="cmd-tag">社交</span>
+        </div>
+        <p class="cmd-desc">向在线好友发起传送请求，待对方同意后即可传送到其身边。</p>
+      </div>
+
+      <div class="cmd-card">
+        <div class="cmd-head">
+          <code class="cmd-code">/tpaccept</code>
+          <span class="cmd-tag">社交</span>
+        </div>
+        <p class="cmd-desc">同意其他玩家向你发起的传送请求。</p>
+      </div>
+
+      <div class="cmd-card">
+        <div class="cmd-head">
+          <code class="cmd-code">/msg [ID] [内容]</code>
+          <span class="cmd-tag">通信</span>
+        </div>
+        <p class="cmd-desc">与指定在线玩家进行一对一私信密语交流，不占用公屏。</p>
+      </div>
+    </div>
+
+    <!-- 绿宝石津贴领取流程 -->
+    <div class="section-head" style="margin-top: 70px;">
+      <div>
+        <div class="kicker">入职福利</div>
+        <h2>每日绿宝石津贴领取</h2>
+      </div>
+      <p class="muted">招募海报上的承诺，每天都能兑现</p>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <b>1</b>
+        <div>
+          <h3>每日登录连入服务器</h3>
+          <p class="muted">启动游戏，连入 <code>mc.luckymj.top</code>，在主世界即可激活当日打卡记录。</p>
+        </div>
+      </div>
+      <div class="step">
+        <b>2</b>
+        <div>
+          <h3>主城打卡与日常领取</h3>
+          <p class="muted">前往出生点广场与管理员或签到打卡点互动，即可领取当日的 10 块纯净绿宝石。</p>
+        </div>
+      </div>
+      <div class="step">
+        <b>3</b>
+        <div>
+          <h3>在公共市场自由交易</h3>
+          <p class="muted">用累积的绿宝石向村民或全服玩家收购附魔金苹果、经验修补书或珍贵矿物！</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <section class="section" style="padding-top: 0;">
+    <div class="cta-box">
+      <div>
+        <div class="kicker">秘籍在手</div>
+        <h2>准备好踏入 LuckyMC 了吗？</h2>
+        <p class="muted">查阅入职指南与服务器地址，立即开启你的方块世界历险。</p>
+      </div>
+      <div class="actions" style="margin-top: 0;">
+        <a class="btn" href="join.html">查看入职指南</a>
+        <a class="btn alt" href="rules.html">了解《玩家公约》</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div>© LuckyMC Server · 纯净原版生存 · 期待与你相遇</div>
+    <div>服务器地址：<a href="join.html">mc.luckymj.top</a></div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

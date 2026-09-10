@@ -41,8 +41,8 @@ a {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 6vw;
-  background: rgba(16, 25, 21, 0.85);
+  padding: 15px 5vw;
+  background: rgba(16, 25, 21, 0.88);
   color: white;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -57,6 +57,7 @@ a {
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-shrink: 0;
 }
 
 .brand span,
@@ -67,8 +68,8 @@ a {
 .navlinks {
   display: flex;
   align-items: center;
-  gap: 28px;
-  font-size: 15px;
+  gap: 20px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -77,6 +78,7 @@ a {
   padding: 6px 2px;
   color: #d1ddd4;
   transition: color 0.2s;
+  white-space: nowrap;
 }
 
 .navlinks a:hover,
@@ -138,6 +140,20 @@ a {
   padding: 160px 6vw 90px;
   background-image: linear-gradient(90deg, rgba(16, 25, 21, 0.9) 0%, rgba(16, 25, 21, 0.62) 100%),
     url('picture/minecraft12.png');
+}
+
+/* 新手指南 Hero: 附魔台与高级科技工具 */
+.page-hero.hero-guide {
+  padding: 160px 6vw 90px;
+  background-image: linear-gradient(90deg, rgba(16, 25, 21, 0.92) 0%, rgba(16, 25, 21, 0.65) 100%),
+    url('picture/minecraft10.jpg');
+}
+
+/* 玩家公约 Hero: 1.21 试炼大厅深邃石砖 */
+.page-hero.hero-rules {
+  padding: 160px 6vw 90px;
+  background-image: linear-gradient(90deg, rgba(16, 25, 21, 0.93) 0%, rgba(16, 25, 21, 0.68) 100%),
+    url('picture/minecraft2.jpg');
 }
 
 /* 加入我们 Hero: 欢快起舞的村民与玩家 */
@@ -278,17 +294,176 @@ a {
   color: var(--m);
 }
 
+/* 公告提示栏 (Notice Bar) */
+.notice-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #15241b;
+  border: 1px solid rgba(184, 243, 106, 0.3);
+  border-radius: 10px;
+  padding: 14px 20px;
+  color: #e5eee6;
+  font-size: 14px;
+  margin-bottom: 36px;
+  flex-wrap: wrap;
+}
+
+.notice-badge {
+  background: var(--g);
+  color: #0b180e;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+/* 指令卡片网格 (Command Grid) */
+.cmd-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.cmd-card {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cmd-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  border-color: #b5c7b3;
+}
+
+.cmd-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cmd-code {
+  font-family: "Consolas", "Courier New", monospace;
+  font-weight: 700;
+  font-size: 15px;
+  color: #1f6e16;
+  background: #edf7e9;
+  padding: 4px 10px;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.cmd-tag {
+  font-size: 12px;
+  color: var(--m);
+  font-weight: 600;
+}
+
+.cmd-desc {
+  margin: 0;
+  font-size: 13px;
+  color: #556259;
+  line-height: 1.5;
+}
+
+/* 核心坐标卡片 (Coordinate Grid) */
+.coord-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.coord-card {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px;
+  transition: transform 0.2s ease;
+}
+
+.coord-card:hover {
+  transform: translateY(-3px);
+}
+
+.coord-card h4 {
+  margin: 0 0 6px;
+  font-size: 17px;
+}
+
+.coord-card p {
+  margin: 0 0 12px;
+  font-size: 13px;
+}
+
+.coord-pos {
+  font-family: "Consolas", "Courier New", monospace;
+  font-weight: 700;
+  color: var(--l);
+  background: #111a14;
+  padding: 6px 12px;
+  border-radius: 6px;
+  display: inline-block;
+  font-size: 13px;
+}
+
+/* 守则与 Mod 政策表格 (Mod Table) */
+.policy-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
+}
+
+.policy-table th,
+.policy-table td {
+  padding: 16px 20px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+}
+
+.policy-table th {
+  background: #f8faf6;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.tag-allow {
+  display: inline-block;
+  background: #e7f7e2;
+  color: #247718;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.tag-ban {
+  display: inline-block;
+  background: #fee7e7;
+  color: #b71c1c;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
 /* 卡片网格 */
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
-}
-
-.grid-4 {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
 }
 
 .card {
@@ -696,11 +871,15 @@ footer a:hover {
 }
 
 /* 响应式适配 */
+@media (max-width: 1080px) {
+  .navlinks {
+    gap: 14px;
+    font-size: 13px;
+  }
+}
+
 @media (max-width: 960px) {
   .grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .grid-4 {
     grid-template-columns: repeat(2, 1fr);
   }
   .gallery {
@@ -718,11 +897,11 @@ footer a:hover {
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 820px) {
   .navlinks {
     display: none;
     position: absolute;
-    top: 62px;
+    top: 60px;
     left: 0;
     right: 0;
     background: #101915;
@@ -738,8 +917,7 @@ footer a:hover {
   .menu {
     display: block;
   }
-  .grid,
-  .grid-4 {
+  .grid {
     grid-template-columns: 1fr;
   }
   .gallery {

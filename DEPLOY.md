@@ -45,10 +45,10 @@ Nginx 根据 server_name 匹配域名，通过 root /var/www/mc.luckymj.top 读�
 
     # 仅导出网页资源，不将 .git、部署文档等放进公开网站目录。
     git -C "$repo" archive HEAD -- \
-        index.html world.html play.html join.html style.css script.js picture \
+        index.html world.html play.html guide.html rules.html join.html style.css script.js picture \
         | tar -x -C "$stage"
 
-    for page in index.html world.html play.html join.html; do
+    for page in index.html world.html play.html guide.html rules.html join.html; do
         test -s "$stage/$page"
     done
     test -s "$stage/style.css"
@@ -95,6 +95,8 @@ git clone https://github.com/luckymj13/MC_web.git ~/sites/MC_web
 curl -I https://mc.luckymj.top/
 curl -I https://mc.luckymj.top/world.html
 curl -I https://mc.luckymj.top/play.html
+curl -I https://mc.luckymj.top/guide.html
+curl -I https://mc.luckymj.top/rules.html
 curl -I https://mc.luckymj.top/join.html
 curl -I https://mc.luckymj.top/style.css
 ```
