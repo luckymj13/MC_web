@@ -1,3 +1,8 @@
+// 自动强制跳转 HTTPS（兜底保障）
+if (window.location.protocol === 'http:' && window.location.hostname === 'minecraft.luckymj.top') {
+  window.location.href = window.location.href.replace('http:', 'https:');
+}
+
 // 移动端菜单切换
 const menuBtn = document.querySelector('.menu');
 const navLinks = document.querySelector('.navlinks');
