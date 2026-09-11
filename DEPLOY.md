@@ -1,161 +1,117 @@
-# LuckyMC 官网部署与更新
+# LuckyMC 官网与服务架构部署文档
 
-本项目是原生 HTML、CSS、JavaScript 静态网站，不需要 Node.js、npm、构建或 dist。以下服务器命令在腾讯云 Ubuntu 的 SSH 终端执行，不能在本地 PowerShell 执行。
+本项目为原生 HTML、CSS、JavaScript 纯静态官网。
 
-## 已确认的部署结构
+**架构重大调整确认**：
+1. **官网访问入口变更**：官网**不再通过 `mc.luckymj.top` 访问**，全面迁移并统一为 **`https://minecraft.luckymj.top/`**（备用原生域名为 `https://luckymj13.github.io/MC_web/`）；
+2. **部署运维交割**：官网**彻底移交 GitHub Pages 托管**，享受全球 CDN 边缘加速、自动免费 SSL 证书及**永久免工信部 ICP 备案**；
+3. **腾讯云服务器定位调整**：腾讯云广州服务器（`43.139.61.54`）**不再承载任何官网 Web 部署与 Nginx 更新操作**，专职运行 Minecraft 游戏服务（`mc.luckymj.top:25565`），确保游戏连接超低延迟，且彻底杜绝 80/443 端口的境内备案阻断干扰。
 
-| 项目 | 配置 |
-| --- | --- |
-| 官网 | https://mc.luckymj.top/ |
-| GitHub | https://github.com/luckymj13/MC_web.git |
-| 分支 | main |
-| 服务器代码目录 | ~/sites/MC_web（ubuntu 用户通常为 /home/ubuntu/sites/MC_web） |
-| Nginx 网站目录 | /var/www/mc.luckymj.top |
-| 当前启用的站点配置 | /etc/nginx/sites-enabled/default |
-| HTTPS 证书目录 | /etc/letsencrypt/live/mc.luckymj.top/ |
-| 游戏服务目录 | /opt/mc_server/，网站更新不操作此目录 |
+---
 
-Nginx 根据 server_name 匹配域名，通过 root /var/www/mc.luckymj.top 读取网页。旧目录 /var/www/html 保留作历史备份。网站更新无需重启 Minecraft 服务。
+## 一、 当前系统全景与职责划分
 
-## 日常更新：本地推送之后执行
+| 服务模块 | 访问地址 / 域名 | 承载平台 / 物理节点 | 职责与作用 |
+| :--- | :--- | :--- | :--- |
+| **官方网站 (Web)** | **`https://minecraft.luckymj.top/`** | **GitHub Pages** (海外边缘 CDN) | 6 页面大服官网（展示世界、玩法、指南、公约、海报），**免备案、自动部署** |
+| **游戏直连 (MC)** | **`mc.luckymj.top:25565`** | **腾讯云广州机房** (`43.139.61.54`) | Minecraft Java 版游戏服务端（目录 `/opt/mc_server/`），**国内极速直连** |
+| **代码仓库** | `https://github.com/luckymj13/MC_web.git` | GitHub (分支: `main`) | 静态网页与素材的版本控制中心 |
 
-### 当前版本依据
+---
 
-- `bc6f477`：更新四个页面的视觉与内容，增加图片素材、实时在线状态和海报灯箱。
-- `714c282`：新增 `guide.html` 新手指南和 `rules.html` 玩家公约，形成六页面官网，并更新导航和样式。
-- 当前部署清单为六个 HTML、`style.css`、`script.js`、整个 `picture/` 以及网站全套 Favicon 图标与清单文件（`favicon.ico`、`favicon.svg`、`apple-touch-icon.png` 等）。不需要构建、安装网站后端或修改 Nginx 路由。
+## 二、 DNS 解析配置标准（腾讯云 / DNSPod）
 
-可以直接在 `ubuntu@VM-4-16-ubuntu:~$` 提示符后执行下面代码，不需要切换目录。只复制代码块内的内容，不要复制提示符、`bash` 标签或 Markdown 围栏。不要将 `&#x20;`、`\|`、`\#`、`MC\_web` 等富文本转义字符粘贴到终端。
+为实现“官网免备案全球秒开 + 游戏国内超低延迟”，DNS 控制台统一配置如下两条核心记录：
 
-先确保本地修改已经提交并成功推送到 GitHub 的 main 分支。然后用 ubuntu 用户登录服务器，将下面整个代码块复制到 Bash 执行。
+| 主机记录 (Host) | 记录类型 (Type) | 记录值 (Value) | 说明 |
+| :--- | :--- | :--- | :--- |
+| **`minecraft`** | **CNAME** | **`luckymj13.github.io`** | **官网专属**：指向 GitHub Pages（免工信部备案） |
+| **`mc`** | **A 记录** | **`43.139.61.54`** | **游戏直连**：直连腾讯云广州机房（10~30ms 极速畅玩） |
 
-脚本先快进拉取，再准备静态文件、备份现有网站，最后覆盖网站目录。使用子 Shell，出错会停止本次更新，不会退出 SSH 登录。每次执行会生成独立备份。
+---
 
-```bash
-(
-    set -euo pipefail
+## 三、 日常更新工作流（从此告别登录服务器）
 
-    repo="$HOME/sites/MC_web"
-    web_root=/var/www/mc.luckymj.top
+由于官网已完全由 GitHub Pages 托管，**日常更新网站不再需要登录腾讯云 Ubuntu 执行任何 SSH 脚本**。
 
-    fail() { echo "部署停止：$*" >&2; exit 1; }
-    test -d "$repo/.git" || fail "代码仓库不存在：$repo"
-    test -f "$web_root/index.html" || fail "现有首页不存在：$web_root/index.html"
-    test "$(git -C "$repo" branch --show-current)" = main || fail '当前分支不是 main'
-    if [ -n "$(git -C "$repo" status --porcelain)" ]; then
-        echo '服务器代码目录存在本地改动，请先检查，更新已停止。' >&2
-        exit 1
-    fi
-
-    git -C "$repo" pull --ff-only origin main
-    test "$(git -C "$repo" rev-parse HEAD)" = "$(git -C "$repo" rev-parse refs/remotes/origin/main)" || fail '服务器存在未推送提交，HEAD 与 origin/main 不一致'
-    revision=$(git -C "$repo" rev-parse --short HEAD)
-    stage=$(mktemp -d /tmp/luckymc-stage.XXXXXXXX)
-    trap 'rm -rf -- "$stage"' EXIT
-
-    # 仅导出网页资源，不将 .git、部署文档等放进公开网站目录。
-    git -C "$repo" archive HEAD -- \
-        index.html world.html play.html guide.html rules.html join.html \
-        style.css script.js picture \
-        favicon.ico favicon.svg favicon-16x16.png favicon-32x32.png favicon-48x48.png favicon-192x192.png favicon-512x512.png \
-        apple-touch-icon.png site.webmanifest | tar -x -C "$stage"
-
-    for page in index.html world.html play.html guide.html rules.html join.html; do
-        test -s "$stage/$page" || fail "导出页面缺失或为空：$page"
-    done
-    test -s "$stage/style.css"
-    test -s "$stage/script.js"
-    test -d "$stage/picture"
-    test -s "$stage/favicon.ico"
-    test -s "$stage/favicon.svg"
-
-    sudo -v
-    sudo mkdir -p /var/backups/luckymc
-    backup=$(sudo mktemp -d /var/backups/luckymc/backup-XXXXXXXX)
-    sudo tar -czf "$backup/site.tar.gz" -C "$web_root" .
-    echo "更新前备份：$backup/site.tar.gz"
-
-    sudo cp -R "$stage/." "$web_root/"
-    sudo find "$web_root" -type d -exec chmod 755 {} +
-    sudo find "$web_root" -type f -exec chmod 644 {} +
-
-    echo "已部署提交：$revision"
-    echo "本次回退备份：$backup/site.tar.gz"
-)
-```
-
-任何命令报错时，先处理错误，不要跳过继续执行。首次使用时若代码目录不存在，先执行：
+你只需要在本地修改 HTML/CSS/JS/图片，然后在本地终端（PowerShell 或 Git Bash）执行标准的 Git 三步曲：
 
 ```bash
-mkdir -p ~/sites
-git clone https://github.com/luckymj13/MC_web.git ~/sites/MC_web
+# 1. 添加所有变动文件
+git add .
+
+# 2. 提交更新日志
+git commit -m "feat: 你的更新说明"
+
+# 3. 推送到 GitHub main 分支
+git push origin main
 ```
 
-私有仓库需要服务器具有读取权限；不要把令牌写进命令、仓库或文档。
+**推送成功后，GitHub Pages 会在 30 秒内自动完成全球 CDN 部署上线，全自动、零维护！**
 
-### 更新范围与限制
+---
 
-- 只更新 HTML、CSS、JS、图片时，无需重新加载 Nginx，也无需重新申请证书。
-- 此方案使用覆盖复制，不会删除线上旧文件。若以后删除或重命名页面、图片，先确认准确路径再单独清理旧文件；不要对网站目录笼统执行递归删除。
-- 若以后新增顶层页面或资源目录，需要把它加入脚本的 git archive 文件列表。
-- 复制过程不是原子切换，期间可能短暂出现新旧资源混用，适用于目前小型展示站。
-- 不要直接在线上修改页面；统一在本地修改、提交推送，再运行更新脚本。
-- 备份会累积，可定期检查 /var/backups/luckymc 的占用，确认不再需要后再清理指定备份。
+## 四、 GitHub Pages 关键配置与保护文件
 
-## 更新后验证
+为确保 `minecraft.luckymj.top` 稳定生效，仓库根目录下包含两个关键配置文件，**严禁误删**：
 
-在服务器执行，确认均返回 HTTP 200：
+1. **`CNAME` 文件**：
+   - 文件内容仅一行：`minecraft.luckymj.top`；
+   - 作用：向 GitHub 声明此仓库对应你的专属子域名，删除会导致自定义域名解绑并出现 404。
+2. **`.nojekyll` 文件**：
+   - 作用：告知 GitHub Pages 直接作为纯静态网站发布，跳过 Jekyll 引擎构建，使部署速度由数分钟缩短至 15~30 秒。
+
+### GitHub 仓库后台设置核验
+在 [GitHub Pages Settings](https://github.com/luckymj13/MC_web/settings/pages) 中核对：
+- **Source**：`Deploy from a branch`
+- **Branch**：`main` / `/ (root)`
+- **Custom domain**：`minecraft.luckymj.top`（DNS check 通过）
+- **Enforce HTTPS**：已勾选（自动签发 Let's Encrypt 证书）
+
+---
+
+## 五、 部署后在线验证
+
+### 1. 浏览器验证
+- 打开 **[https://minecraft.luckymj.top/](https://minecraft.luckymj.top/)**
+- 按 **`Ctrl + F5`**（Mac 电脑按 `Cmd + Shift + R`）强制刷新本地浏览器缓存；
+- 检查以下 6 个核心页面是否顺畅跳转：
+  - 首页：`https://minecraft.luckymj.top/`
+  - 探索世界：`https://minecraft.luckymj.top/world.html`
+  - 玩法福利：`https://minecraft.luckymj.top/play.html`
+  - 新手指南：`https://minecraft.luckymj.top/guide.html`
+  - 玩家公约：`https://minecraft.luckymj.top/rules.html`
+  - 加入我们：`https://minecraft.luckymj.top/join.html`
+
+### 2. 命令行连通性验证
+在任意终端执行以下命令，确认返回 `HTTP/2 200`：
 
 ```bash
-curl -I https://mc.luckymj.top/
-curl -I https://mc.luckymj.top/world.html
-curl -I https://mc.luckymj.top/play.html
-curl -I https://mc.luckymj.top/guide.html
-curl -I https://mc.luckymj.top/rules.html
-curl -I https://mc.luckymj.top/join.html
-curl -I https://mc.luckymj.top/style.css
-curl -I https://mc.luckymj.top/script.js
-curl -I https://mc.luckymj.top/favicon.ico
-curl -I https://mc.luckymj.top/favicon.svg
+curl -I https://minecraft.luckymj.top/
+curl -I https://minecraft.luckymj.top/guide.html
+curl -I https://minecraft.luckymj.top/rules.html
 ```
 
-浏览器打开官网，按 Ctrl + F5 强制刷新，检查导航、图片加载与放大、复制地址、FAQ 展开以及手机菜单。加入页应显示 Minecraft Java 26.1.2。HTTP 200 只能验证资源可访问，不能代替交互检查。
+---
 
-实时状态由访客浏览器访问 `https://api.mcstatus.io/v2/status/java/mc.luckymj.top` 获取，无需在 Ubuntu 上部署该 API。当前脚本在请求失败时仍显示“服务器正常运行”，因此这个提示不能证明查询成功或游戏服务在线；应在浏览器开发者工具 Network 中检查接口响应，并用游戏客户端验证连接。该已知行为不在本次部署文档更新中修改。
+## 六、 附录：历史腾讯云 Nginx 部署归档（已退役参考）
 
-若显示旧页面，先检查浏览器缓存和 Nginx 实际 root；若用了 CDN，还需刷新相关 CDN 缓存。
+> [!NOTE]
+> **说明**：以下内容为旧版在腾讯云 Ubuntu 上使用 Nginx 托管静态网页的历史方案，**现已全面由 GitHub Pages 取代，日常无需执行**，仅保留作应急技术归档。
 
+<details>
+<summary>点击展开历史腾讯云 Ubuntu Nginx 部署参考</summary>
+
+### 历史部署路径与说明
+- 旧代码目录：`~/sites/MC_web`
+- 旧站点目录：`/var/www/mc.luckymj.top`
+- 旧配置：Nginx 80/443 反向映射（因未取得工信部备案，已被腾讯云网关阻断）。
+
+### 如需彻底停用腾讯云 Nginx 的 Web 站点释放资源（可选）：
 ```bash
-git -C ~/sites/MC_web log -1 --oneline
-sudo nginx -T 2>&1 | less
+# 停止或禁用 default 站点，避免无效日志占用
+sudo systemctl stop nginx
+sudo systemctl disable nginx
 ```
-
-在 less 中搜索 /mc.luckymj.top，按 q 退出。
-
-## 回退到更新前
-
-更新脚本会输出本次备份的完整路径。把下面占位路径替换为该路径，然后执行：
-
-```bash
-backup_file=/var/backups/luckymc/backup-替换为实际编号/site.tar.gz
-sudo test -f "$backup_file" && \
-sudo tar -xzf "$backup_file" -C /var/www/mc.luckymj.top
-```
-
-这会恢复备份中的文件，不会删除新版本额外增加的文件；额外文件需要按准确路径另行处理。回退网站文件不会改变服务器 Git 检出的提交；在 GitHub 修复之前不要再次运行更新脚本，否则会重新部署新版本。恢复后再次验证页面。
-
-## 修改 Nginx 配置时
-
-日常文件更新不需要操作配置。只有修改域名、网站目录或 HTTPS 设置时才需要以下流程：
-
-```bash
-site_config=$(readlink -f /etc/nginx/sites-enabled/default)
-sudo mkdir -p /etc/nginx-backups
-sudo cp -a "$site_config" "/etc/nginx-backups/default-$(date +%Y%m%d-%H%M%S).conf"
-sudo nano "$site_config"
-sudo nginx -t && sudo systemctl reload nginx
-```
-
-保留现有 Certbot 证书及 HTTP 跳转配置；不要改动 /etc/nginx/conf.d/github-webhook.conf。配置备份应放在 /etc/nginx-backups，避免被 Nginx 重复加载。nginx -t 报错时不要重启服务。
-
-未来新增子域名时，每个站点使用独立的 /var/www/域名 目录和 Nginx server 配置，以不同的 server_name 匹配；多个子域名可指向同一服务器 IP。
+*(注意：关闭 Nginx 完全不影响 Minecraft 游戏服务 `/opt/mc_server/` 的运行)*
+</details>
