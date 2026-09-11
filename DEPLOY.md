@@ -23,7 +23,7 @@ Nginx 根据 server_name 匹配域名，通过 root /var/www/mc.luckymj.top 读�
 
 - `bc6f477`：更新四个页面的视觉与内容，增加图片素材、实时在线状态和海报灯箱。
 - `714c282`：新增 `guide.html` 新手指南和 `rules.html` 玩家公约，形成六页面官网，并更新导航和样式。
-- 当前部署清单为六个 HTML、`style.css`、`script.js` 和整个 `picture/`。不需要构建、安装网站后端或修改 Nginx 路由。
+- 当前部署清单为六个 HTML、`style.css`、`script.js`、整个 `picture/` 以及网站全套 Favicon 图标与清单文件（`favicon.ico`、`favicon.svg`、`apple-touch-icon.png` 等）。不需要构建、安装网站后端或修改 Nginx 路由。
 
 可以直接在 `ubuntu@VM-4-16-ubuntu:~$` 提示符后执行下面代码，不需要切换目录。只复制代码块内的内容，不要复制提示符、`bash` 标签或 Markdown 围栏。不要将 `&#x20;`、`\|`、`\#`、`MC\_web` 等富文本转义字符粘贴到终端。
 
@@ -54,7 +54,11 @@ Nginx 根据 server_name 匹配域名，通过 root /var/www/mc.luckymj.top 读�
     trap 'rm -rf -- "$stage"' EXIT
 
     # 仅导出网页资源，不将 .git、部署文档等放进公开网站目录。
-    git -C "$repo" archive HEAD -- index.html world.html play.html guide.html rules.html join.html style.css script.js picture | tar -x -C "$stage"
+    git -C "$repo" archive HEAD -- \
+        index.html world.html play.html guide.html rules.html join.html \
+        style.css script.js picture \
+        favicon.ico favicon.svg favicon-16x16.png favicon-32x32.png favicon-48x48.png favicon-192x192.png favicon-512x512.png \
+        apple-touch-icon.png site.webmanifest | tar -x -C "$stage"
 
     for page in index.html world.html play.html guide.html rules.html join.html; do
         test -s "$stage/$page" || fail "导出页面缺失或为空：$page"
@@ -62,6 +66,8 @@ Nginx 根据 server_name 匹配域名，通过 root /var/www/mc.luckymj.top 读�
     test -s "$stage/style.css"
     test -s "$stage/script.js"
     test -d "$stage/picture"
+    test -s "$stage/favicon.ico"
+    test -s "$stage/favicon.svg"
 
     sudo -v
     sudo mkdir -p /var/backups/luckymc
@@ -109,6 +115,8 @@ curl -I https://mc.luckymj.top/rules.html
 curl -I https://mc.luckymj.top/join.html
 curl -I https://mc.luckymj.top/style.css
 curl -I https://mc.luckymj.top/script.js
+curl -I https://mc.luckymj.top/favicon.ico
+curl -I https://mc.luckymj.top/favicon.svg
 ```
 
 浏览器打开官网，按 Ctrl + F5 强制刷新，检查导航、图片加载与放大、复制地址、FAQ 展开以及手机菜单。加入页应显示 Minecraft Java 26.1.2。HTTP 200 只能验证资源可访问，不能代替交互检查。
