@@ -19,6 +19,14 @@ Nginx 根据 server_name 匹配域名，通过 root /var/www/mc.luckymj.top 读�
 
 ## 日常更新：本地推送之后执行
 
+### 当前版本依据
+
+- `bc6f477`：更新四个页面的视觉与内容，增加图片素材、实时在线状态和海报灯箱。
+- `714c282`：新增 `guide.html` 新手指南和 `rules.html` 玩家公约，形成六页面官网，并更新导航和样式。
+- 当前部署清单为六个 HTML、`style.css`、`script.js` 和整个 `picture/`。不需要构建、安装网站后端或修改 Nginx 路由。
+
+可以直接在 `ubuntu@VM-4-16-ubuntu:~$` 提示符后执行下面代码，不需要切换目录。只复制代码块内的内容，不要复制提示符、`bash` 标签或 Markdown 围栏。不要将 `&#x20;`、`\|`、`\#`、`MC\_web` 等富文本转义字符粘贴到终端。
+
 先确保本地修改已经提交并成功推送到 GitHub 的 main 分支。然后用 ubuntu 用户登录服务器，将下面整个代码块复制到 Bash 执行。
 
 脚本先快进拉取，再准备静态文件、备份现有网站，最后覆盖网站目录。使用子 Shell，出错会停止本次更新，不会退出 SSH 登录。每次执行会生成独立备份。
@@ -30,26 +38,26 @@ Nginx 根据 server_name 匹配域名，通过 root /var/www/mc.luckymj.top 读�
     repo="$HOME/sites/MC_web"
     web_root=/var/www/mc.luckymj.top
 
-    test -d "$repo/.git"
-    test -f "$web_root/index.html"
-    test "$(git -C "$repo" branch --show-current)" = main
+    fail() { echo "部署停止：$*" >&2; exit 1; }
+    test -d "$repo/.git" || fail "代码仓库不存在：$repo"
+    test -f "$web_root/index.html" || fail "现有首页不存在：$web_root/index.html"
+    test "$(git -C "$repo" branch --show-current)" = main || fail '当前分支不是 main'
     if [ -n "$(git -C "$repo" status --porcelain)" ]; then
         echo '服务器代码目录存在本地改动，请先检查，更新已停止。' >&2
         exit 1
     fi
 
     git -C "$repo" pull --ff-only origin main
+    test "$(git -C "$repo" rev-parse HEAD)" = "$(git -C "$repo" rev-parse refs/remotes/origin/main)" || fail '服务器存在未推送提交，HEAD 与 origin/main 不一致'
     revision=$(git -C "$repo" rev-parse --short HEAD)
     stage=$(mktemp -d /tmp/luckymc-stage.XXXXXXXX)
     trap 'rm -rf -- "$stage"' EXIT
 
     # 仅导出网页资源，不将 .git、部署文档等放进公开网站目录。
-    git -C "$repo" archive HEAD -- \
-        index.html world.html play.html guide.html rules.html join.html style.css script.js picture \
-        | tar -x -C "$stage"
+    git -C "$repo" archive HEAD -- index.html world.html play.html guide.html rules.html join.html style.css script.js picture | tar -x -C "$stage"
 
     for page in index.html world.html play.html guide.html rules.html join.html; do
-        test -s "$stage/$page"
+        test -s "$stage/$page" || fail "导出页面缺失或为空：$page"
     done
     test -s "$stage/style.css"
     test -s "$stage/script.js"
@@ -59,6 +67,7 @@ Nginx 根据 server_name 匹配域名，通过 root /var/www/mc.luckymj.top 读�
     sudo mkdir -p /var/backups/luckymc
     backup=$(sudo mktemp -d /var/backups/luckymc/backup-XXXXXXXX)
     sudo tar -czf "$backup/site.tar.gz" -C "$web_root" .
+    echo "更新前备份：$backup/site.tar.gz"
 
     sudo cp -R "$stage/." "$web_root/"
     sudo find "$web_root" -type d -exec chmod 755 {} +
@@ -99,9 +108,12 @@ curl -I https://mc.luckymj.top/guide.html
 curl -I https://mc.luckymj.top/rules.html
 curl -I https://mc.luckymj.top/join.html
 curl -I https://mc.luckymj.top/style.css
+curl -I https://mc.luckymj.top/script.js
 ```
 
 浏览器打开官网，按 Ctrl + F5 强制刷新，检查导航、图片加载与放大、复制地址、FAQ 展开以及手机菜单。加入页应显示 Minecraft Java 26.1.2。HTTP 200 只能验证资源可访问，不能代替交互检查。
+
+实时状态由访客浏览器访问 `https://api.mcstatus.io/v2/status/java/mc.luckymj.top` 获取，无需在 Ubuntu 上部署该 API。当前脚本在请求失败时仍显示“服务器正常运行”，因此这个提示不能证明查询成功或游戏服务在线；应在浏览器开发者工具 Network 中检查接口响应，并用游戏客户端验证连接。该已知行为不在本次部署文档更新中修改。
 
 若显示旧页面，先检查浏览器缓存和 Nginx 实际 root；若用了 CDN，还需刷新相关 CDN 缓存。
 
